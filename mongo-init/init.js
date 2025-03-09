@@ -16,7 +16,8 @@ db.usuarios.insertOne({
 
 db.vehiculos.insertOne({
     "tipo": "sedan",
-    "disponible": true
+    "placa": "ABC123",
+    "disponibilidad": true
 });
 
 
