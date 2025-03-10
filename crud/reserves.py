@@ -270,3 +270,17 @@ def get_most_canceling_user(limit=1):
 
     except Exception as e:
         return jsonify({"error": "An error occurred", "message": str(e)}), 500
+
+
+def finished_reservation(id):
+    try:
+        id = ObjectId(id)
+    except Exception as e:
+        message = {"error": "Invalid ID", "message": str(e)}
+        return jsonify(message), 400
+    reservation = mongo.db.reservas.find_one({"_id": id})
+    if reservation is None:
+        return jsonify({"error": "Reservation not found"}), 404
+    mongo.db.reservas.update_one({"_id": id}, {"$set": {"estado": "terminada"}})
+    message = {"message": f"Reserva {id} terminada"}
+    return jsonify(message), 200

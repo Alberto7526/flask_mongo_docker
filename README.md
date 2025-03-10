@@ -160,7 +160,7 @@ La colección **cancelaciones** almacena información sobre las reservas cancela
 
 ## Lógica para la penalización de usuarios que tienen más de 3 cancelaciones en los ultimos 7 días
 
-Se creó la colección _cancelaciones_, la cual es alimentada cada vez que se realiza una cancelación, al mismo tiempo se valida la cantidad de cancelaciones por usuario y se cambia el estado en la colección de usuarios a **true** por defecto **false**
+Se creó la colección _cancelaciones_, la cual es alimentada cada vez que se realiza una cancelación, al mismo tiempo se valida la cantidad de cancelaciones por usuario y se cambia el estado en la colección de usuarios a **true** por defecto **false** cuando este tiene más de 3 cancelaciones.
 
 Cuando un usuario va a realizar una reserva se valdia este dato y si es verdadero devolvera un mensaje como este:
 

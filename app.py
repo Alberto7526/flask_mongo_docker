@@ -640,5 +640,30 @@ def get_most_canceling_user_limit(limit):
     )  # Pasar el 'limit' a la función de obtener el usuario que más ha cancelado
 
 
+@app.route("/reserve/finished/<id>", methods=["PUT"])
+def finished_reservation_endpoint(id):
+    """
+    Terminar reservas
+    ---
+    description: Actualiza una reserva a estado terminado
+    parameters:
+      - name: id
+        in: path
+        description: ID de la reserva a terminar
+        required: true
+        type: string
+    responses:
+        200:
+            description: mensaje con el id de la reserva actualizada
+            schema:
+                type: string
+                description: ID de la reserva terminada
+        400:
+            description: ID inválido
+
+    """
+    return finished_reservation(id)
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
