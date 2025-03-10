@@ -6,12 +6,15 @@ db = db.getSiblingDB('reservas_db');
 db.createCollection("usuarios");
 db.createCollection("vehiculos");
 db.createCollection("reservas");
+db.createCollection("cancelaciones");
 
 // Insertar datos iniciales
 db.usuarios.insertOne({
     "nombre": "Pepito Perez",
     "email": "pepito@example.com",
+    "estado": false,
     "reservas": []
+    
 });
 
 db.vehiculos.insertOne({

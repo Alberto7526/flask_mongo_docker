@@ -79,7 +79,7 @@ def create_user(user):
         return jsonify({"error": "Invalid email"}), 400
     if mongo.db.usuarios.find_one({"email": email}):
         return jsonify({"error": "Email already exists"}), 400
-    user = {"nombre": name, "email": email, "historial_reservas": []}
+    user = {"nombre": name, "email": email, "estado": False, "historial_reservas": []}
     user_id = mongo.db.usuarios.insert_one(user)
     return jsonify({"id": str(user_id.inserted_id)}), 201
 

@@ -2,6 +2,7 @@ from config.config import app
 from flasgger import Swagger
 from crud.users import *
 from crud.vehicles import *
+from crud.reserves import *
 from flask import request
 
 # inicializamos swagger
@@ -378,6 +379,135 @@ def delete_vehicle_endpoint(id):
             description: Vehículo no encontrado
     """
     return delete_vehicle(id)
+
+
+# Rutas reservas
+
+
+@app.route("/reserve", methods=["GET"])
+def get_reserves_endpoint():
+    """
+    Listar todas las reservas
+    ---
+    description: Obtiene todas las reservas de la base de datos.
+    responses:
+      200:
+        description: Lista de reservas
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                description: ID de la reserva
+              id_usuario:
+                type: string
+                description: Id del usuario
+              id_vehiculo:
+                type: string
+                description: Id del vehiculo
+              fecha_inicio:
+                type: string
+                format: date
+                description: Fecha y hora de inicio de la reserva (formato YYYY-MM-DD)
+              fecha_fin:
+                type: string
+                format: date
+                description: Fecha y hora de inicio de la reserva (formato YYYY-MM-DD)
+    """
+    return get_reserves()
+
+
+@app.route("/reserve", methods=["POST"])
+def create_reservation_endpoint():
+    """
+    Crear una reserva
+    ---
+    description: Crea una nueva reserva en la base de datos
+    parameters:
+      - name: reservation
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            id_usuario:
+              type: string
+              description: Id del usuario
+            id_vehiculo:
+              type: string
+              description: Id del vehiculo
+            fecha_inicio:
+              type: string
+              format: date
+              description: Fecha y hora de inicio de la reserva (formato YYYY-MM-DD)
+            fecha_fin:
+              type: string
+              format: date
+              description: Fecha y hora de inicio de la reserva (formato YYYY-MM-DD)
+    responses:
+      201:
+          description: Id de la reserva creada
+          schema:
+              type: string
+              description: ID del vehículo creado
+      400:
+          description: Campos requeridos faltantes o vehículo ya existente
+    """
+    reservation = request.json
+    return create_reservation(reservation)
+
+
+@app.route("/reserve/<id>", methods=["PUT"])
+def cancel_reservation_endpoint(id):
+    """
+    Cancelar reservas
+    ---
+    description: Actualiza una reserva a estado cancelado
+    parameters:
+      - name: id
+        in: path
+        description: ID de la reserva a cancelar
+        required: true
+        type: string
+    responses:
+        200:
+            description: mensaje con el id de la reserva actualizada
+            schema:
+                type: string
+                description: ID de la reserva cancelada
+        400:
+            description: ID inválido
+
+    """
+    return cancel_reservation(id)
+
+
+@app.route("/reserve/user/<id>", methods=["PUT"])
+def activate_user_endpoint(id):
+    """
+    Activar usuario para reservas
+    ---
+    description: Actualiza un usuario para que nuevamente pueda hacer reservas
+    parameters:
+      - name: id
+        in: path
+        description: ID del usuario
+        required: true
+        type: string
+    responses:
+        200:
+            description: mensaje con el id del usuario activado
+            schema:
+                type: string
+                description: ID del usuario
+        400:
+            description: ID inválido
+        404:
+            description: Usuario no encontrado
+    """
+    return activate_user(id)
 
 
 if __name__ == "__main__":
