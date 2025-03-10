@@ -1,4 +1,4 @@
-from config.config import mongo
+from app import mongo
 from bson.json_util import dumps
 from bson import ObjectId
 from flask import Response, jsonify
@@ -150,4 +150,4 @@ def delete_user(id):
     if user is None:
         return jsonify({"error": "User not found"}), 404
     mongo.db.usuarios.delete_one({"_id": ObjectId(id)})
-    return jsonify({"id": str(id)}), 200
+    return jsonify({"id": str(id)}), 204

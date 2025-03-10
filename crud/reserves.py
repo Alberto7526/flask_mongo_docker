@@ -1,4 +1,4 @@
-from config.config import mongo
+from app import mongo
 from bson.json_util import dumps
 from bson import ObjectId
 from flask import Response, jsonify
@@ -172,3 +172,101 @@ def activate_user(id):
     )
     message = {"message": f"Usuario {id} activado"}
     return jsonify(message), 200
+
+
+def get_reservations_by_user(id):
+    try:
+        id = ObjectId(id)
+    except Exception as e:
+        message = {"error": "Invalid ID", "message": str(e)}
+        return jsonify(message), 400
+    user = mongo.db.usuarios.find_one({"_id": ObjectId(id)})
+    if user is None:
+        return jsonify({"error": "User not found"}), 404
+    reservations = mongo.db.reservas.find({"id_usuario": id})
+    reservations = dumps(reservations)
+    return Response(reservations, mimetype="application/json", status=200)
+
+
+def get_most_reserved_vehicle():
+    """
+    Vehículo con la mayor cantidad de reservas.
+
+    Returns:
+        JSON: Información sobre el vehículo con más reservas.
+
+    Raises:
+        HTTPException:
+            - 500: Si ocurre un error inesperado al obtener el vehículo más reservado.
+    """
+    pipeline = [
+        {"$group": {"_id": "$id_vehiculo", "cantidad": {"$sum": 1}}},
+        {"$sort": {"cantidad": -1}},
+        {"$limit": 1},
+    ]
+    resultado = mongo.db.reservas.aggregate(pipeline)
+    vehicle = list(resultado)
+    if not vehicle:
+        return jsonify({"error": "No reservations found"}), 404
+
+    most_reserved_vehicle_id = vehicle[0]["_id"]
+    vehicle_ = mongo.db.vehiculos.find_one({"_id": most_reserved_vehicle_id})
+    if not vehicle_:
+        return jsonify({"error": "Vehicle not found"}), 404
+
+    response = {
+        "id_vehiculo": most_reserved_vehicle_id,
+        "cantidad_reservas": vehicle[0]["cantidad"],
+        "vehiculo": vehicle_,
+    }
+
+    return Response(dumps(response), mimetype="application/json", status=200)
+
+
+def get_most_canceling_user(limit=1):
+    """
+    Obtiene los usuarios que más han cancelado reservas.
+
+    Args:
+        limit (int): Número máximo de usuarios a devolver, por defecto 1.
+
+    Returns:
+        JSON: Usuarios con más cancelaciones.
+
+    Raises:
+        HTTPException:
+            - 500: Si ocurre un error inesperado al obtener los usuarios que más cancelan.
+    """
+    try:
+        if not isinstance(limit, int) or limit <= 0:
+            return jsonify({"error": "'limit' must be a positive integer."}), 400
+
+        pipeline = [
+            {"$group": {"_id": "$id_usuario", "cantidad_cancelaciones": {"$sum": 1}}},
+            {"$sort": {"cantidad_cancelaciones": -1}},
+            {"$limit": limit},
+        ]
+        resultado = mongo.db.cancelaciones.aggregate(pipeline)
+        users = list(resultado)
+
+        if not users:
+            return jsonify({"error": "No cancellations found"}), 404
+
+        response = []
+        for user in users:
+            user_id = user["_id"]
+            user_details = mongo.db.usuarios.find_one({"_id": user_id})
+
+            if user_details:
+                response.append(
+                    {
+                        "id_usuario": user_id,
+                        "cantidad_cancelaciones": user["cantidad_cancelaciones"],
+                        "usuario": user_details,
+                    }
+                )
+
+        return Response(dumps(response), mimetype="application/json", status=200)
+
+    except Exception as e:
+        return jsonify({"error": "An error occurred", "message": str(e)}), 500

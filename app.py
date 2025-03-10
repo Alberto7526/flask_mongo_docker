@@ -1,9 +1,15 @@
-from config.config import app
+from flask import Flask, request
+from flask_pymongo import PyMongo
 from flasgger import Swagger
+
+app = Flask(__name__)
+app.config["MONGO_URI"] = "mongodb://mongo:27017/reservas_db"
+mongo = PyMongo(app)
+
 from crud.users import *
 from crud.vehicles import *
 from crud.reserves import *
-from flask import request
+
 
 # inicializamos swagger
 
@@ -200,7 +206,7 @@ def delete_user_endpoint(id):
         required: true
         type: string
     responses:
-        200:
+        204:
             description: Id usuario eliminado
             schema:
                 type: string
@@ -268,7 +274,7 @@ def get_vehicle_by_id_endpoint(id):
                     placa:
                         type: string
                         description: Placa del vehículo
-                    disponible:
+                    disponibilidad:
                         type: boolean
                         description: Estado de reserva del vehículo
         404:
@@ -335,7 +341,7 @@ def update_vehicle_endpoint(id):
             placa:
               type: string
               description: Placa del vehículo
-            disponibliidad:
+            disponibilidad:
               type: boolean
               description: Estado del vehículo
     responses:
@@ -368,7 +374,7 @@ def delete_vehicle_endpoint(id):
         required: true
         type: string
     responses:
-        200:
+        204:
             description: Id vehículo eliminado
             schema:
                 type: string
@@ -508,6 +514,130 @@ def activate_user_endpoint(id):
             description: Usuario no encontrado
     """
     return activate_user(id)
+
+
+@app.route("/reserve/user/<id>", methods=["GET"])
+def get_reservations_by_user_endpoint(id):
+    """
+    Listar todas las reservas por usuario
+    ---
+    description: Obtiene todas las reservas de la base de datos por usuario.
+    parameters:
+        - name: id
+          in: path
+          description: ID del usuario a consultar
+          required: true
+          type: string
+    responses:
+      200:
+        description: Lista de reservas
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+                description: ID de la reserva
+              id_usuario:
+                type: string
+                description: Id del usuario
+              id_vehiculo:
+                type: string
+                description: Id del vehiculo
+              fecha_inicio:
+                type: string
+                format: date
+                description: Fecha y hora de inicio de la reserva (formato YYYY-MM-DD)
+              fecha_fin:
+                type: string
+                format: date
+                description: Fecha y hora de inicio de la reserva (formato YYYY-MM-DD)
+    """
+    return get_reservations_by_user(id)
+
+
+@app.route("/reserve/vehicle/", methods=["GET"])
+def get_most_reserved_vehicle_endpoint():
+    """
+    Vehiculo más reservado
+      ---
+      description: Obtiene el vehiculo más reservado
+      parameters:
+        - name: limit
+          in: path
+          description: Limite de resultados
+          required: true
+          type: string
+      responses:
+        200:
+            description: Vehículo más reservado
+            schema:
+                type: object
+                properties:
+                    _id:
+                        type: string
+                        description: ID del vehículo
+                    tipo:
+                        type: string
+                        description: Tipo de vehículo
+                    placa:
+                        type: string
+                        description: Placa del vehículo
+                    disponibilidad:
+                        type: boolean
+                        description: Estado de reserva del vehículo
+        404:
+            description: Vehículo no encontrado
+        400:
+            description: ID inválido
+    """
+    return get_most_reserved_vehicle()
+
+
+@app.route("/reserve/users/<int:limit>", methods=["GET"])
+def get_most_canceling_user_limit(limit):
+    """
+    Usuarios con más cancelaciones
+      ---
+      description: Obtiene los usuarios que más han cancelado reservas
+      parameters:
+        - name: limit
+          in: path
+          description: Límite de resultados
+          required: true
+          type: integer
+      responses:
+        200:
+            description: Usuarios con más cancelaciones
+            schema:
+                type: array
+                items:
+                    type: object
+                    properties:
+                        id_usuario:
+                            type: string
+                            description: ID del usuario
+                        cantidad_cancelaciones:
+                            type: integer
+                            description: Cantidad de cancelaciones realizadas por el usuario
+                        usuario:
+                            type: object
+                            properties:
+                                nombre:
+                                    type: string
+                                    description: Nombre del usuario
+                                email:
+                                    type: string
+                                    description: Correo del usuario
+        404:
+            description: No se encontraron cancelaciones
+        400:
+            description: Límite inválido
+    """
+    return get_most_canceling_user(
+        limit
+    )  # Pasar el 'limit' a la función de obtener el usuario que más ha cancelado
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-from config.config import mongo
+from app import mongo
 from bson.json_util import dumps
 from bson import ObjectId
 from flask import Response, jsonify
@@ -75,7 +75,7 @@ def create_vehicle(vehicle):
         )
     if mongo.db.vehiculos.find_one({"placa": placa}):
         return jsonify({"error": "Vehicle already exists"}), 400
-    vehiculo = {"placa": placa, "tipo": tipo, "disponible": True}
+    vehiculo = {"placa": placa, "tipo": tipo, "disponibilidad": True}
     vehicle_id = mongo.db.vehiculos.insert_one(vehiculo)
     return jsonify({"id": str(vehicle_id.inserted_id)}), 201
 
@@ -148,4 +148,4 @@ def delete_vehicle(id):
     if vehicle is None:
         return jsonify({"error": "Vehicle not found"}), 404
     mongo.db.vehiculos.delete_one({"_id": ObjectId(id)})
-    return jsonify({"id": id}), 200
+    return jsonify({"id": id}), 204

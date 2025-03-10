@@ -1,4 +1,4 @@
-from config.config import mongo
+from app import mongo
 
 
 def check_reserve(vehicle_id, start_date, end_date):
